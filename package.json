@@ -1,0 +1,23 @@
+{
+  "name": "archive",
+  "version": "1.0.0",
+  "description": "Discord bot for archiving channels for use in AI model training",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"placeholder\""
+  },
+  "keywords": [
+    "ai",
+    "bot",
+    "discord"
+  ],
+  "author": "midnightdoggo19",
+  "license": "SEE LICENSE IN LICENSE.md",
+  "dependencies": {
+    "csv-writer": "^1.6.0",
+    "discord.js": "^14.16.3",
+    "dotenv": "^16.4.5",
+    "fs": "^0.0.1-security",
+    "winston": "^3.17.0"
+  }
+}
