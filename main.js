@@ -99,6 +99,7 @@ client.on('messageCreate', async (message) => {
     else if (message.content.toLowerCase() === '!retrain') {
         logger.info(`Retrain command received in channel ${message.channel.name} by ${message.author.username}`);
         try {
+            message.react('<a:shakingeyes:1307349244717432954>')
             const retrain = spawn('python3', ['train.py']); // Run a python script to retrain the model
             retrain.stdout.on('data', data => {
                 console.log(data.toString()); // Log output from python
