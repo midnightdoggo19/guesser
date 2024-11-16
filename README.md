@@ -9,7 +9,7 @@
 ### Install dependencies:
 
     pip install -r ./python/requirements.txt
-    npm i
+    npm install
 
 Copy example.env and add your bot's information, and rename it to .env.
 
