@@ -105,7 +105,7 @@ client.on('messageCreate', async (message) => {
             let loadingReaction = loadingEmojis[(Math.random() * loadingEmojis.length) | 0]
             message.react(loadingReaction)
 
-            const retrain = spawn('python3', ['train.py']); // Run a python script to retrain the model
+            const retrain = spawn('python3', ['./python/train.py']); // Run a python script to retrain the model
             retrain.stdout.on('data', data => {
                 console.log(data.toString()); // Log output from python
             });
@@ -122,7 +122,7 @@ client.on('messageCreate', async (message) => {
 
     else {
         // AI Guessing for each message
-        const predictor = spawn('python3', ['predictor.py', message.content]);
+        const predictor = spawn('python3', ['./python/predictor.py', message.content]);
 
         let prediction = '';
         predictor.stdout.on('data', data => {
