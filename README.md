@@ -16,3 +16,13 @@ Copy example.env and add your bot's information, and rename it to .env.
 Run the bot:
 
     node main.js
+
+## Usage
+### Commands
+    !archive - Exports the current channel as a .csv file for use in training the model.
+<br />
+    !retrain - Makes use of the exported .csv file to train the model.
+<br />
+
+### Guessing
+In order to have the bot start guessing, just send a channel in a server the bot has access to! It'll process the message and try and guess who sent it.
