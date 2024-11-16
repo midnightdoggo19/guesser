@@ -5,8 +5,8 @@ from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
 
 # Load the model and vectorizer
-clf = joblib.load("username_predictor.joblib")
-vectorizer = joblib.load("vectorizer.joblib")
+clf = joblib.load("./models/username_predictor.joblib")
+vectorizer = joblib.load("./models/vectorizer.joblib")
 
 # Download NLTK data (if not already available)
 import nltk

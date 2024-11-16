@@ -60,8 +60,8 @@ clf = RandomForestClassifier(n_estimators=100, random_state=42)
 clf.fit(train_text, train_labels)
 
 # Step 6: Save the model and vectorizer
-joblib.dump(clf, "username_predictor.joblib")
-joblib.dump(vectorizer, "vectorizer.joblib")
+joblib.dump(clf, "./models/username_predictor.joblib")
+joblib.dump(vectorizer, "./models/vectorizer.joblib")
 print("Model and vectorizer saved.")
 
 # Step 7: Evaluate the model
