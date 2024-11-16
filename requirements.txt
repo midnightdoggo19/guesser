@@ -1,3 +1,5 @@
-ntlk
 joblib
 sys
+pandas
+sklearn
+nltk
