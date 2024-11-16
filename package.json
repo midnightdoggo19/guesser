@@ -1,10 +1,11 @@
 {
-  "name": "archive",
+  "name": "guesser",
   "version": "1.0.0",
   "description": "Discord bot for archiving channels for use in AI model training",
   "main": "main.js",
   "scripts": {
-    "test": "echo \"placeholder\""
+    "test": "jest",
+    "start" : "main.js"
   },
   "keywords": [
     "ai",
@@ -19,5 +20,9 @@
     "dotenv": "^16.4.5",
     "fs": "^0.0.1-security",
     "winston": "^3.17.0"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "validate-npm-package-name": "^6.0.0"
   }
 }
