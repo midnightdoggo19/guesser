@@ -96,28 +96,48 @@ client.on('messageCreate', async (message) => {
         return;
     }
 
-    // AI Guessing for Each Message
-    const python = spawn('python3', ['predictor.py', message.content]);
-
-    let prediction = '';
-    python.stdout.on('data', data => {
-        prediction += data.toString();
-    });
-
-    python.stderr.on('data', err => {
-        logger.error(`Python script error: ${err.toString()}`);
-    });
-
-    python.on('close', async code => {
-        if (code !== 0) {
-            logger.error(`Python script exited with code ${code}`);
-            await message.reply('There was an error making the prediction.');
-        } else {
-            const predictedUser = prediction.trim();
-            logger.info(`Predicted user for message "${message.content}": ${predictedUser}`);
-            await message.reply(`The user most likely to have sent this message is: ${predictedUser}`);
+    else if (message.content.toLowerCase() === '!retrain') {
+        logger.info(`Retrain command received in channel ${message.channel.name} by ${message.author.username}`);
+        try {
+            const retrain = spawn('python3', ['train.py']); // Run a python script to retrain the model
+            retrain.stdout.on('data', data => {
+                console.log(data.toString()); // Log output from python
+            });
+            retrain.on('close', async code => { // When python finishes
+                await message.reply('Finished training model!')
+                logger.info('Model training finished!')
+            });
         }
-    });
+        catch (error) {
+            await message.reply('There was an error retraining the model.');
+            await logger.error(`Error retraining model: ${error.message}`);
+        }
+    }
+
+    else {
+        // AI Guessing for each message
+        const predictor = spawn('python3', ['predictor.py', message.content]);
+
+        let prediction = '';
+        predictor.stdout.on('data', data => {
+            prediction += data.toString();
+        });
+
+        predictor.stderr.on('data', err => {
+            logger.error(`Python script error: ${err.toString()}`);
+        });
+
+        predictor.on('close', async code => {
+            if (code !== 0) {
+                 logger.error(`Python script exited with code ${code}`);
+                 await message.reply('There was an error making the prediction.');
+            } else {
+                 const predictedUser = prediction.trim();
+                 logger.info(`Predicted user for message "${message.content}": ${predictedUser}`);
+                 await message.reply(`The user most likely to have sent this message is: ${predictedUser}`);
+            }
+        });
+    }
 });
 
 client.login(process.env.TOKEN);

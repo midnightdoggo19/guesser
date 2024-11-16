@@ -94,3 +94,5 @@ print("\nTesting prediction function:")
 test_message = "This is a test message"
 predicted_user = predict_username(test_message)
 print(f"Predicted user for message '{test_message}': {predicted_user}")
+
+quit()
