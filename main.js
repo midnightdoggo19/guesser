@@ -63,16 +63,18 @@ client.on('messageCreate', async (message) => {
                 if (fetchedMessages.size === 0) break;
 
                 fetchedMessages.forEach(msg => {
-                    messages.push({
-                        message: msg.content,
-                        username: msg.author.username,
-                    });
+                    if (!msg.author.bot) {
+                        messages.push({
+                            message: msg.content,
+                            username: msg.author.username,
+                        });
+                    }
                 });
 
                 lastMessageId = fetchedMessages.last().id;
             }
 
-            let writtenFile = `dataset.csv`
+            let writtenFile = process.env.DATASET
 
             // Create CSV Writer
             const csvWriter = createCsvWriter({

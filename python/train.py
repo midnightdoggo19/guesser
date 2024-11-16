@@ -7,6 +7,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.feature_extraction.text import CountVectorizer
 import joblib
 import nltk
+import os
 
 # Download required NLTK data
 nltk.download("punkt")
@@ -15,7 +16,7 @@ nltk.download("wordnet")
 
 # Step 1: Load the data
 try:
-    data = pd.read_csv("dataset.csv")
+    data = pd.read_csv(os.getenv("DATASET"))
     print(data.head())  # Preview the first few rows
     print("Columns:", data.columns)  # Check the column names
 except Exception as e:
