@@ -18,6 +18,9 @@ const logger = winston.createLogger({
     ]
 });
 
+// From the emoijs tab of the bot's dev portal page
+const loadingEmojis = ['<a:loading2:1307386878609064030>', '<a:loading1:1307386865191620608>', '<a:loading:1307386851698409512>', '<a:loading3:1307386838947856474>', '<a:shakingeyes:1307349244717432954>'];
+
 // Create Discord client
 const client = new Client({
     intents: [
@@ -99,7 +102,9 @@ client.on('messageCreate', async (message) => {
     else if (message.content.toLowerCase() === '!retrain') {
         logger.info(`Retrain command received in channel ${message.channel.name} by ${message.author.username}`);
         try {
-            message.react('<a:shakingeyes:1307349244717432954>')
+            let loadingReaction = loadingEmojis[(Math.random() * loadingEmojis.length) | 0]
+            message.react(loadingReaction)
+
             const retrain = spawn('python3', ['train.py']); // Run a python script to retrain the model
             retrain.stdout.on('data', data => {
                 console.log(data.toString()); // Log output from python
@@ -131,7 +136,7 @@ client.on('messageCreate', async (message) => {
         predictor.on('close', async code => {
             if (code !== 0) {
                  logger.error(`Python script exited with code ${code}`);
-                 await message.reply('There was an error making the prediction.');
+                 await message.reply('There was an error making the prediction.\nPlease try running \'!retrain\'');
             } else {
                  const predictedUser = prediction.trim();
                  logger.info(`Predicted user for message "${message.content}": ${predictedUser}`);
