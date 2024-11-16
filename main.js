@@ -138,7 +138,7 @@ client.on('messageCreate', async (message) => {
         predictor.on('close', async code => {
             if (code !== 0) {
                  logger.error(`Python script exited with code ${code}`);
-                 await message.reply('There was an error making the prediction.\nPlease try running \'!retrain\'');
+                 await message.reply('**Sorry, there was an error making the prediction.**\nPlease try running \`!retrain\`. If that fails, please try \`!archive\`. If that fails, please (open a GitHub Issue)[<https://github.com/midnightdoggo19/guesser/issues/new>]');
             } else {
                  const predictedUser = prediction.trim();
                  logger.info(`Predicted user for message "${message.content}": ${predictedUser}`);
