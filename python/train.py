@@ -25,12 +25,12 @@ except Exception as e:
 
 # Ensure the dataset contains the necessary columns
 if 'text' not in data.columns or 'username' not in data.columns:
-    print("Error: CSV file must contain 'text' and 'username' columns.")
+    print('Error: CSV file must contain \'text\' and \'username\' columns.')
     exit()
 
 # Step 2: Preprocess the text data
 tokenizer = word_tokenize
-stop_words = stopwords.words("english")
+stop_words = stopwords.words('english')
 lemmatizer = WordNetLemmatizer()
 preprocessed_text = []
 
@@ -44,8 +44,8 @@ for sentence in data['text']:
         tokens = [lemmatizer.lemmatize(token) for token in tokens]  # Lemmatize tokens
         preprocessed_text.append(' '.join(tokens))
     except Exception as e:
-        print(f"Error processing sentence: {sentence}")
-        print(f"Exception: {e}")
+        print(f'Error processing sentence: {sentence}')
+        print(f'Exception: {e}')
         preprocessed_text.append('')  # Add empty string for problematic rows
 
 # Step 3: Vectorize the text data
@@ -61,9 +61,9 @@ clf = RandomForestClassifier(n_estimators=100, random_state=42)
 clf.fit(train_text, train_labels)
 
 # Step 6: Save the model and vectorizer
-joblib.dump(clf, "./models/username_predictor.joblib")
-joblib.dump(vectorizer, "./models/vectorizer.joblib")
-print("Model and vectorizer saved.")
+joblib.dump(clf, './models/username_predictor.joblib')
+joblib.dump(vectorizer, './models/vectorizer.joblib')
+print('Model and vectorizer saved.')
 
 # Step 7: Evaluate the model
 from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
@@ -73,9 +73,9 @@ accuracy = accuracy_score(test_labels, predictions)
 report = classification_report(test_labels, predictions)
 matrix = confusion_matrix(test_labels, predictions)
 
-print("Accuracy:", accuracy)
-print("Classification Report:\n", report)
-print("Confusion Matrix:\n", matrix)
+print('Accuracy:', accuracy)
+print('Classification Report:\n', report)
+print('Confusion Matrix:\n', matrix)
 
 # Step 8: Simple prediction function for new inputs
 def predict_username(input_text):
@@ -87,13 +87,17 @@ def predict_username(input_text):
         prediction = clf.predict(vector)
         return prediction[0]
     except Exception as e:
-        print("Error predicting username:", e)
+        print('Error predicting username:', e)
         return None
 
 # Test the prediction function
-print("\nTesting prediction function:")
-test_message = "This is a test message"
-predicted_user = predict_username(test_message)
-print(f"Predicted user for message '{test_message}': {predicted_user}")
+def testPrediction():
+    print('\nTesting prediction function:')
+    testMessage = 'Hey look at this message, I wonder who it\'s from!'
+    blankMessage = ' '
+    predictedUser = predict_username(testMessage)
+    blankMessagePrediction = predict_username(blankMessage)
+    print(f'Predicted user for message "{testMessage}": {predictedUser}')
+    print(f'Precicted user for blank message: {blankMessagePrediction}')
 
-quit()
+testPrediction()
