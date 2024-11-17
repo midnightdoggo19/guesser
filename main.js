@@ -122,7 +122,7 @@ client.on('messageCreate', async (message) => {
         }
     }
 
-    else if (message.channel.id === '1249040537374294059'){
+    else if (message.channel.id === process.env.WORKINGCHANNEL){
         // AI Guessing for each message
         const predictor = spawn('python3', ['./python/predictor.py', message.content]);
 
