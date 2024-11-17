@@ -1,3 +1,6 @@
+# Dataset
+*.csv
+
 # Logs
 logs
 *.log
