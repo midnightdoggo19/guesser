@@ -15,7 +15,7 @@ Copy example.env and add your bot's information, and rename it to .env.
 
 Run the bot:
 
-    node main.js
+    npm start
 
 ## Usage
 ### Commands
