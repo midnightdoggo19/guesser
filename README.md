@@ -11,9 +11,14 @@
     pip install -r ./python/requirements.txt
     npm install
 
-Copy example.env and add your bot's information, and rename it to .env.
+#### Copy example.env and add your bot's information, and rename it to ".env". This includes:
+<li>TOKEN- Your bot token</li>
+<li>ID- Your bot ID</li>
+<li>LOG- The file to log to (default: archive.log)</li>
+<li>DATASET- Used by main.js and train.py as the csv to save the channel text & usernames too</li>
+<li>WORKINGCHANNEL- The channel the bot should respond in</li>
 
-Run the bot:
+##### Run the bot:
 
     npm start
 
