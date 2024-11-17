@@ -36,8 +36,9 @@ client.once('ready', () => {
 
 // Listen to all messages
 client.on('messageCreate', async (message) => {
-    // Ignore messages from bots
+    // Ignore messages not in valid channel or from bot itself
     if (message.author.bot) return;
+    if (message.channel.id != process.env.WORKINGCHANNEL) return;
 
     // Log each received message
     logger.info(`Received message from ${message.author.username}: ${message.content}`);
@@ -122,7 +123,7 @@ client.on('messageCreate', async (message) => {
         }
     }
 
-    else if (message.channel.id === process.env.WORKINGCHANNEL){
+    else {
         // AI Guessing for each message
         const predictor = spawn('python3', ['./python/predictor.py', message.content]);
 
