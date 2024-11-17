@@ -75,7 +75,7 @@ client.on('messageCreate', async (message) => {
                 lastMessageId = fetchedMessages.last().id;
             }
 
-            let writtenFile = process.env.DATASET
+            let writtenFile = './dataset.csv'
 
             // Create CSV Writer
             const csvWriter = createCsvWriter({

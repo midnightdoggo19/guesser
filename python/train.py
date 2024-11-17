@@ -16,7 +16,7 @@ nltk.download("wordnet")
 
 # Step 1: Load the data
 try:
-    data = pd.read_csv(os.getenv("DATASET"))
+    data = pd.read_csv(os.getenv('../dataset.csv'))
     print(data.head())  # Preview the first few rows
     print("Columns:", data.columns)  # Check the column names
 except Exception as e:
