@@ -116,7 +116,7 @@ client.on('messageCreate', async (message) => {
                 console.log(data.toString()); // Log output from python
             });
             retrain.on('close', async code => { // When python finishes
-                await message.react(':white_check_mark:')
+                await message.react('white_check_mark')
                 logger.info('Model training finished!')
             });
         }
