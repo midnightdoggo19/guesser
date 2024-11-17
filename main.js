@@ -23,7 +23,7 @@ const loadingEmojis = ['<a:loading2:1307386878609064030>', '<a:loading1:13073868
 
 // Create Discord client
 const client = new Client({
-    intents: [
+    intents: [ // Requires these to be enabled in the dev portal
         GatewayIntentBits.Guilds,
         GatewayIntentBits.GuildMessages,
         GatewayIntentBits.MessageContent,
@@ -43,7 +43,7 @@ client.on('messageCreate', async (message) => {
     // Log each received message
     logger.info(`Received message from ${message.author.username}: ${message.content}`);
 
-    // Archive Trigger
+    // Save to dataset file
     if (message.content.toLowerCase() === '!savechannel') {
         logger.info(`Archive command received in channel ${message.channel.name} by ${message.author.username}`);
 
@@ -58,7 +58,7 @@ client.on('messageCreate', async (message) => {
             let messages = [];
             let lastMessageId;
 
-            // Fetch messages in chunks of 100
+            // Fetch messages in chunks of 100 (can take some time for large channels)
             while (true) {
                 const fetchedMessages = await message.channel.messages.fetch({ limit: 100, before: lastMessageId });
                 if (fetchedMessages.size === 0) break;
@@ -105,7 +105,7 @@ client.on('messageCreate', async (message) => {
     else if (message.content.toLowerCase() === '!retrain') {
         logger.info(`Retrain command received in channel ${message.channel.name} by ${message.author.username}`);
         try {
-            let loadingReaction = loadingEmojis[(Math.random() * loadingEmojis.length) | 0]
+            let loadingReaction = loadingEmojis[(Math.random() * loadingEmojis.length) | 0] // Pick a random emoji from the above array
             message.react(loadingReaction)
 
             const retrain = spawn('python3', ['./python/train.py']); // Run a python script to retrain the model
@@ -124,7 +124,7 @@ client.on('messageCreate', async (message) => {
     }
 
     else {
-        // AI Guessing for each message
+        // AI guessing for each message
         const predictor = spawn('python3', ['./python/predictor.py', message.content]);
 
         let prediction = '';
