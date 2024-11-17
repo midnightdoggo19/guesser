@@ -44,7 +44,7 @@ client.on('messageCreate', async (message) => {
     logger.info(`Received message from ${message.author.username}: ${message.content}`);
 
     // Archive Trigger
-    if (message.content.toLowerCase() === '!archive') {
+    if (message.content.toLowerCase() === '!savechannel') {
         logger.info(`Archive command received in channel ${message.channel.name} by ${message.author.username}`);
 
         if (!message.channel.isTextBased()) {
