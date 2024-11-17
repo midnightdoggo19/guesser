@@ -5,7 +5,8 @@
   "main": "main.js",
   "scripts": {
     "test": "jest",
-    "start" : "node main.js"
+    "start" : "node main.js",
+    "retrain" : "python3 ./python/train.py"
   },
   "keywords": [
     "ai",
