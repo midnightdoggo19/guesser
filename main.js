@@ -21,6 +21,11 @@ const logger = winston.createLogger({
 // From the emoijs tab of the bot's dev portal page
 const loadingEmojis = ['<a:loading2:1307386878609064030>', '<a:loading1:1307386865191620608>', '<a:loading:1307386851698409512>', '<a:loading3:1307386838947856474>', '<a:shakingeyes:1307349244717432954>'];
 
+function loadingReaction () {
+           let loadingReaction = loadingEmojis[(Math.random() * loadingEmojis.length) | 0] // Pick a random emoji from the above array
+    message.react(loadingReaction)
+}
+
 // Create Discord client
 const client = new Client({
     intents: [ // Requires these to be enabled in the dev portal
@@ -105,9 +110,7 @@ client.on('messageCreate', async (message) => {
     else if (message.content.toLowerCase() === '!retrain') {
         logger.info(`Retrain command received in channel ${message.channel.name} by ${message.author.username}`);
         try {
-            let loadingReaction = loadingEmojis[(Math.random() * loadingEmojis.length) | 0] // Pick a random emoji from the above array
-            message.react(loadingReaction)
-
+            loadingReaction()
             const retrain = spawn('python3', ['./python/train.py']); // Run a python script to retrain the model
             retrain.stdout.on('data', data => {
                 console.log(data.toString()); // Log output from python
