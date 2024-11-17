@@ -96,6 +96,7 @@ client.on('messageCreate', async (message) => {
             logger.info(`Archived ${messages.length} messages from channel ${message.channel.name}`);
 
             // Notify user
+            message.react('<:check:1307855194930942033>')
             await message.reply({
                 content: 'Messages archived successfully!',
                 files: [{ attachment: writtenFile }]
@@ -116,7 +117,7 @@ client.on('messageCreate', async (message) => {
                 console.log(data.toString()); // Log output from python
             });
             retrain.on('close', async code => { // When python finishes
-                // await message.react('white_check_mark')
+                message.react('<:check:1307855194930942033>')
                 logger.info('Model training finished!')
             });
         }
