@@ -19,9 +19,13 @@ const logger = winston.createLogger({
     ]
 });
 
+// Files
 const DATASET_FILE = process.env.DATASET || 'dataset.csv';
 const WORKING_CHANNEL = process.env.WORKINGCHANNEL;
 const ANALYTICS_FILE = path.resolve(__dirname, './data/analytics.json');
+
+let processedMessages = 0; // Tracks processed messages
+const AI_PROCESS_LIMIT = process.env('MAXPROCESS'); // Maximum messages to process
 
 // Initialize Discord Client
 const client = new Client({
