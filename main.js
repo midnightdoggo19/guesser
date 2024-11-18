@@ -19,11 +19,8 @@ const logger = winston.createLogger({
     ]
 });
 
-// Dataset File Path
 const DATASET_FILE = process.env.DATASET || 'dataset.csv';
 const WORKING_CHANNEL = process.env.WORKINGCHANNEL;
-
-// Analytics File Path
 const ANALYTICS_FILE = path.resolve(__dirname, './data/analytics.json');
 
 // Initialize Discord Client
@@ -43,6 +40,13 @@ function randomReact (message) {
     message.react(loadingReaction)
 }
 
+// Remove entries for a specific user
+function removeUserFromDataset(dataset, username) {
+    const filteredDataset = dataset.filter(row => row.username !== username);
+    logger.info(`Removed entries for user: ${username}. Remaining entries: ${filteredDataset.length}`);
+    return filteredDataset;
+}
+
 // Generate analytics
 function generateAnalytics(dataset) {
     //if (!Array.isArray(dataset)) {
@@ -52,7 +56,7 @@ function generateAnalytics(dataset) {
 
     // Verify dataset structure
     const isValid = dataset.every(
-        entry => typeof entry.Message === 'string' && typeof entry.Username === 'string'
+        entry => typeof entry.Message === 'string' && typeof entry.username === 'string'
     );
 
     if (!isValid) {
@@ -63,13 +67,13 @@ function generateAnalytics(dataset) {
     const totalMessages = dataset.length;
 
     const messagesPerUser = dataset.reduce((acc, row) => {
-        acc[row.Username] = (acc[row.Username] || 0) + 1;
+        acc[row.username] = (acc[row.username] || 0) + 1;
         return acc;
     }, {});
 
     const wordCountPerUser = dataset.reduce((acc, row) => {
         const wordCount = row.Message.split(/\s+/).length;
-        acc[row.Username] = (acc[row.Username] || 0) + wordCount;
+        acc[row.username] = (acc[row.username] || 0) + wordCount;
         return acc;
     }, {});
 
@@ -110,13 +114,15 @@ function loadDataset() {
     return dataset;
 }
 
+let dataset = loadDataset();
+
 // Save Dataset
 function saveDataset(dataset) {
     const csvWriter = createCsvWriter({
         path: DATASET_FILE,
         header: [
-            { id: 'Message', title: 'Message' },
-            { id: 'Username', title: 'Username' },
+            { id: 'message', title: 'text' },
+            { id: 'username', title: 'username' },
         ],
     });
     csvWriter.writeRecords(dataset).then(() => logger.info('Dataset saved successfully.'));
@@ -133,7 +139,7 @@ async function archiveMessages(channel) {
 
         fetched.forEach(msg => {
             if (!msg.author.bot) {
-                messages.push({ Message: msg.content, Username: msg.author.username });
+                messages.push({ Message: msg.content, username: msg.author.username });
             }
         });
         lastMessageId = fetched.last().id;
@@ -146,7 +152,7 @@ async function archiveMessages(channel) {
 // Retrain Model
 function retrainModel() {
     logger.info('Retraining model...');
-    const python = spawn('python3', ['python/train.py', DATASET_FILE]);
+    const python = spawn('python3', ['./train.py', DATASET_FILE]);
 
     python.stdout.on('data', data => logger.info(`Model Output: ${data.toString()}`));
     python.stderr.on('data', err => logger.error(`Model Error: ${err.toString()}`));
@@ -230,7 +236,7 @@ client.on('messageCreate', async (message) => {
         logger.info(`Retrain command received in channel ${message.channel.name} by ${message.author.username}`);
         try {
             randomReact(message);
-            const retrain = spawn('python3', ['./python/train.py']); // Run a python script to retrain the model
+            const retrain = spawn('python3', ['./train.py']); // Run a python script to retrain the model
             retrain.stdout.on('data', data => {
                 console.log(data.toString()); // Log output from python
             });
@@ -252,9 +258,31 @@ client.on('messageCreate', async (message) => {
         await message.reply('Analytics generated and saved!');
     }
 
+    // Remove User Command
+    else if (message.content.startsWith('!removeuser')) {
+        const parts = message.content.split(' ');
+        if (parts.length < 2) {
+            await message.reply('Usage: `!removeuser <username>`');
+            return;
+        }
+
+        const usernameToRemove = parts[1];
+        const initialCount = dataset.length;
+
+        // Remove entries for the specified user
+        dataset = dataset.filter(row => row.username !== usernameToRemove);
+
+        if (dataset.length < initialCount) {
+            saveDataset(dataset);
+            await message.reply(`Entries for user "${usernameToRemove}" have been removed.`);
+        } else {
+            await message.reply(`No entries found for user "${usernameToRemove}".`);
+        }
+    }
+
     else {
         // AI guessing for each message
-        const predictor = spawn('python3', ['./python/predictor.py', message.content]);
+        const predictor = spawn('python3', ['./predictor.py', message.content]);
 
         let prediction = '';
         predictor.stdout.on('data', data => {
@@ -268,7 +296,7 @@ client.on('messageCreate', async (message) => {
         predictor.on('close', async code => {
             if (code !== 0) {
                  logger.error(`Python script exited with code ${code}`);
-                 await message.reply('**Sorry, there was an error making the prediction.**\nPlease try running \`!retrain\`. If that fails, please try \`!archive\`. If that fails, please [open a GitHub issue](<https://github.com/midnightdoggo19/guesser/issues/new>).');
+                 await message.reply('**Sorry, there was an error making the prediction.**\nPlease try running \`!retrain\`. If that fails, please try \`!savechannel\`. If that fails, please [open a GitHub issue](<https://github.com/midnightdoggo19/guesser/issues/new>).');
             } else {
                  const predictedUser = prediction.trim();
                  logger.info(`Predicted user for message "${message.content}": ${predictedUser}`);

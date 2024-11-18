@@ -24,7 +24,7 @@
 
 ## Usage
 ### Commands
-    !archive - Exports the current channel as a .csv file for use in training the model.
+    !savechannel - Exports the current channel as a .csv file for use in training the model.
     !retrain - Makes use of the exported .csv file to train the model.
 
 ### Guessing
