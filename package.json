@@ -5,8 +5,8 @@
   "main": "main.js",
   "scripts": {
     "test": "jest",
-    "start" : "node main.js",
-    "train" : "node train.js"
+    "start": "node main.js",
+    "train": "node train.js"
   },
   "keywords": [
     "ai",
@@ -16,6 +16,7 @@
   "author": "midnightdoggo19",
   "license": "SEE LICENSE IN LICENSE.md",
   "dependencies": {
+    "csv-parser": "^3.0.0",
     "csv-writer": "^1.6.0",
     "discord.js": "^14.16.3",
     "dotenv": "^16.4.5",

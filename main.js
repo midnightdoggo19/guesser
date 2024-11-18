@@ -1,8 +1,9 @@
 require('dotenv').config();
 const { Client, GatewayIntentBits } = require('discord.js');
 const { spawn } = require('child_process');
-const createCsvWriter = require('csv-writer').createObjectCsvWriter;
 const fs = require('fs');
+const path = require('path');
+const createCsvWriter = require('csv-writer').createObjectCsvWriter;
 const winston = require('winston');
 
 // Setup Logger
@@ -14,7 +15,23 @@ const logger = winston.createLogger({
     ),
     transports: [
         new winston.transports.Console(),
-        new winston.transports.File({ filename: process.env.LOG }),
+        new winston.transports.File({ filename: process.env.LOG || 'archive.log' }),
+    ]
+});
+
+// Dataset File Path
+const DATASET_FILE = process.env.DATASET || 'dataset.csv';
+const WORKING_CHANNEL = process.env.WORKINGCHANNEL;
+
+// Analytics File Path
+const ANALYTICS_FILE = path.resolve(__dirname, './data/analytics.json');
+
+// Initialize Discord Client
+const client = new Client({
+    intents: [
+        GatewayIntentBits.Guilds,
+        GatewayIntentBits.GuildMessages,
+        GatewayIntentBits.MessageContent,
     ]
 });
 
@@ -26,18 +43,119 @@ function randomReact (message) {
     message.react(loadingReaction)
 }
 
-// Create Discord client
-const client = new Client({
-    intents: [ // Requires these to be enabled in the dev portal
-        GatewayIntentBits.Guilds,
-        GatewayIntentBits.GuildMessages,
-        GatewayIntentBits.MessageContent,
-    ]
-});
+// Generate analytics
+function generateAnalytics(dataset) {
+    //if (!Array.isArray(dataset)) {
+    //    logger.error('Dataset is not an array. Cannot generate analytics.');
+    //    return {};
+    //}
 
-client.once('ready', () => {
-    logger.info('Bot is online and ready to operate!');
-});
+    // Verify dataset structure
+    const isValid = dataset.every(
+        entry => typeof entry.Message === 'string' && typeof entry.Username === 'string'
+    );
+
+    if (!isValid) {
+        logger.error('Dataset entries are invalid. Ensure all entries have "Message" and "Username" fields.');
+        return {};
+    }
+
+    const totalMessages = dataset.length;
+
+    const messagesPerUser = dataset.reduce((acc, row) => {
+        acc[row.Username] = (acc[row.Username] || 0) + 1;
+        return acc;
+    }, {});
+
+    const wordCountPerUser = dataset.reduce((acc, row) => {
+        const wordCount = row.Message.split(/\s+/).length;
+        acc[row.Username] = (acc[row.Username] || 0) + wordCount;
+        return acc;
+    }, {});
+
+    return {
+        totalMessages,
+        messagesPerUser,
+        wordCountPerUser,
+    };
+}
+
+// Save analytics to a file
+function saveAnalytics(analytics) {
+    fs.writeFileSync(ANALYTICS_FILE, JSON.stringify(analytics, null, 2));
+    logger.info('Analytics generated and saved.');
+}
+
+function loadDataset() {
+    const dataset = [];
+    if (fs.existsSync(DATASET_FILE)) {
+        if (!Array.isArray(dataset)) { throw new logger.error('Dataset is not an array.'); }
+        const content = fs.readFileSync(DATASET_FILE, 'utf8');
+        const lines = content.split('\n').filter(line => line.trim() !== '');
+        if (lines.length > 1) {
+            const headers = lines[0].split(','); // Ensure valid headers
+            const rows = lines.slice(1);
+            rows.forEach(line => {
+                const values = line.split(',');
+                dataset.push({
+                    [headers[0]]: values[0],
+                    [headers[1]]: values[1],
+                });
+            });
+        }
+        logger.info(`Loaded dataset with ${dataset.length} entries.`);
+    } else {
+        logger.warn('Dataset file not found. Starting with an empty dataset.');
+    }
+    return dataset;
+}
+
+// Save Dataset
+function saveDataset(dataset) {
+    const csvWriter = createCsvWriter({
+        path: DATASET_FILE,
+        header: [
+            { id: 'Message', title: 'Message' },
+            { id: 'Username', title: 'Username' },
+        ],
+    });
+    csvWriter.writeRecords(dataset).then(() => logger.info('Dataset saved successfully.'));
+}
+
+// Archive Messages
+async function archiveMessages(channel) {
+    let messages = [];
+    let lastMessageId;
+
+    while (true) {
+        const fetched = await channel.messages.fetch({ limit: 100, before: lastMessageId });
+        if (fetched.size === 0) break;
+
+        fetched.forEach(msg => {
+            if (!msg.author.bot) {
+                messages.push({ Message: msg.content, Username: msg.author.username });
+            }
+        });
+        lastMessageId = fetched.last().id;
+    }
+
+    saveDataset(messages);
+    return messages.length;
+}
+
+// Retrain Model
+function retrainModel() {
+    logger.info('Retraining model...');
+    const python = spawn('python3', ['python/train.py', DATASET_FILE]);
+
+    python.stdout.on('data', data => logger.info(`Model Output: ${data.toString()}`));
+    python.stderr.on('data', err => logger.error(`Model Error: ${err.toString()}`));
+
+    python.on('close', code => {
+        if (code === 0) logger.info('Model retrained successfully.');
+        else logger.error(`Model retrain process exited with code ${code}.`);
+    });
+}
 
 // Listen to all messages
 client.on('messageCreate', async (message) => {
@@ -127,6 +245,13 @@ client.on('messageCreate', async (message) => {
         }
     }
 
+    else if (message.content.toLowerCase() === '!generateanalytics') {
+        randomReact(message);
+        const analytics = generateAnalytics(DATASET_FILE);
+        saveAnalytics(ANALYTICS_FILE);
+        await message.reply('Analytics generated and saved!');
+    }
+
     else {
         // AI guessing for each message
         const predictor = spawn('python3', ['./python/predictor.py', message.content]);
@@ -151,6 +276,11 @@ client.on('messageCreate', async (message) => {
             }
         });
     }
+});
+
+// Bot Ready Event
+client.once('ready', () => {
+    logger.info('Bot is online and ready.');
 });
 
 client.login(process.env.TOKEN);
