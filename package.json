@@ -5,8 +5,7 @@
   "main": "main.js",
   "scripts": {
     "test": "jest",
-    "start": "node main.js",
-    "train": "node train.js"
+    "start": "node main.js"
   },
   "keywords": [
     "ai",
