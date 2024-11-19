@@ -51,6 +51,16 @@ function yay (yaymessage) {
 // Remove entries for a specific user
 function removeUserFromDataset(dataset, username) {
     const filteredDataset = dataset.filter(row => row.username !== username);
+
+    dataset = dataset.filter(row => {
+        if (!row || !row.Username || !row.Message) {
+            console.warn('Skipping malformed row:', row);
+            return true; // Keep malformed rows, only exclude matching users
+        }
+        return row.Username.trim() !== usernameToRemove;
+    });
+
+
     logger.info(`Removed entries for user: ${username}. Remaining entries: ${filteredDataset.length}`);
     return filteredDataset;
 }
@@ -116,7 +126,8 @@ function loadDataset() {
             });
         }
         logger.info(`Loaded dataset with ${dataset.length} entries.`);
-    } else {
+    }
+    else {
         logger.warn('Dataset file not found. Starting with an empty dataset.');
     }
     return dataset;
@@ -187,24 +198,42 @@ client.on('messageCreate', async (message) => {
         retrainModel()
         yay(message)
     }
-    else if (message.content.startsWith('!removeuser')) {
+    else if (message.content === '!generateanalytics') {
+        randomReact(message)
+        logger.info(`Analytics command received in channel ${message.channel.name} by ${message.author.username}`);
+        const analytics = generateAnalytics(dataset);
+        saveAnalytics(analytics);
+        await message.reply('Analytics generated and saved!');
+    }
+    if (message.content.startsWith('!removeuser')) {
         const parts = message.content.split(' ');
         if (parts.length < 2) {
             await message.reply('Usage: `!removeuser <username>`');
             return;
         }
 
-        const usernameToRemove = parts[1];
+        const usernameToRemove = parts[1].trim();
+        console.log(`Attempting to remove user: "${usernameToRemove}"`);
+
         const initialCount = dataset.length;
 
-        logger.info(`Removeuser command received in channel ${message.channel.name} from ${message.author.username} (Removing ${usernameToRemove})`);
+        // Filter dataset by the "username" column
+        dataset = dataset.filter(row => {
+            if (!row || typeof row.username !== 'string' || typeof row.text !== 'string') {
+                console.warn('Skipping malformed row:', row);
+                return true; // Keep malformed rows
+            }
+            return row.username.trim() !== usernameToRemove;
+        });
 
-        dataset = dataset.filter(row => row.Username !== usernameToRemove);
+        const removedCount = initialCount - dataset.length;
 
-        if (dataset.length < initialCount) {
+        // Save the updated dataset and provide feedback
+        if (removedCount > 0) {
             saveDataset(dataset);
-            await message.reply(`Entries for user "${usernameToRemove}" have been removed.`);
-        } else {
+            await message.reply(`Removed ${removedCount} entries for user "${usernameToRemove}".`);
+        }
+        else {
             await message.reply(`No entries found for user "${usernameToRemove}".`);
         }
     }
@@ -232,7 +261,8 @@ client.on('messageCreate', async (message) => {
             if (code !== 0) {
                  logger.error(`Python script exited with code ${code}`);
                  await message.reply('**Sorry, there was an error making the prediction.**\nPlease try running \`!retrain\`. If that fails, please try \`!savechannel\`. If that fails, please [open a GitHub issue](<https://github.com/midnightdoggo19/guesser/issues/new>).');
-            } else {
+            }
+            else {
                  const predictedUser = prediction.trim();
                  logger.info(`Predicted user for message "${message.content}": ${predictedUser}`);
                  await message.reply(`The user most likely to have sent this message is: ${predictedUser}`);
