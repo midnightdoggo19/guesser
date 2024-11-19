@@ -68,31 +68,29 @@ function removeUserFromDataset(dataset, username) {
 
 // Generate analytics
 function generateAnalytics(dataset) {
-    //if (!Array.isArray(dataset)) {
-    //    logger.error('Dataset is not an array. Cannot generate analytics.');
-    //    return {};
-    //}
-
-    // Verify dataset structure
-    const isValid = dataset.every(
-        entry => typeof entry.Message === 'string' && typeof entry.username === 'string'
-    );
-
-    if (!isValid) {
-        logger.error('Dataset entries are invalid. Ensure all entries have "Message" and "Username" fields.');
+    if (!Array.isArray(dataset) || dataset.length === 0) {
+        logger.error('Dataset is empty or invalid. Cannot generate analytics.');
         return {};
     }
 
     const totalMessages = dataset.length;
 
     const messagesPerUser = dataset.reduce((acc, row) => {
-        acc[row.username] = (acc[row.username] || 0) + 1;
+        if (row.username && row.text) {
+            acc[row.username] = (acc[row.username] || 0) + 1;
+        } else {
+            console.warn('Skipping malformed row:', row);
+        }
         return acc;
     }, {});
 
     const wordCountPerUser = dataset.reduce((acc, row) => {
-        const wordCount = row.Message.split(/\s+/).length;
-        acc[row.username] = (acc[row.username] || 0) + wordCount;
+        if (row.username && row.text) {
+            const wordCount = row.text.split(/\s+/).length;
+            acc[row.username] = (acc[row.username] || 0) + wordCount;
+        } else {
+            console.warn('Skipping malformed row:', row);
+        }
         return acc;
     }, {});
 
