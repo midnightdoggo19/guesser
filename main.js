@@ -117,9 +117,9 @@ function loadDataset() {
             .on('data', (row) => {
                 if (row.text && row.username) {
                     dataset.push({ text: row.text, username: row.username });
-                } else {
-                    console.warn('Malformed row:', row);
-                }
+                } // else {
+                    // console.warn('Malformed row:', row);
+                // }
             })
             .on('end', () => logger.info(`Dataset loaded with ${dataset.length} entries.`));
     } else {
@@ -163,43 +163,44 @@ async function archiveMessages(channel) {
 }
 
 // Retrain Model
-function retrainModel() {
+async function retrainModel (reactmessage) {
     logger.info('Retraining model...');
     const python = spawn('python3', ['./train.py', DATASET_FILE]);
 
-    python.stdout.on('data', data => logger.info(`Model Output: ${data.toString()}`));
-    python.stderr.on('data', err => logger.error(`Model Error: ${err.toString()}`));
+    python.stdout.on('data', data => console.log(`Model Output: ${data.toString()}`));
+    python.stderr.on('data', err => console.log(`Model Error: ${err.toString()}`));
 
     python.on('close', code => {
-        if (code === 0) logger.info('Model retrained successfully.');
-        else logger.error(`Model retrain process exited with code ${code}.`);
+        if (code === 0) { logger.info('Model retrained successfully.'); yay(reactmessage); }
+        else { logger.error(`Model retrain process exited with code ${code}.`); }
     });
 }
 
 client.on('messageCreate', async (message) => {
     if (message.author.bot || message.channel.id != process.env.WORKINGCHANNEL) return;
 
-    if (message.content === '!savechannel') {
+    if (message.content.toLowerCase() === '!savechannel') {
         randomReact(message)
         logger.info(`Archive command received in ${message.channel.name} from ${message.author.username}`);
         const count = await archiveMessages(message.channel);
-        await message.reply(`Archived ${count} messages.`)
-        yay(message)
+        await message.reply(`Archived ${count} messages.`).then( yay(message) );
+        return;
     }
-    else if (message.content === '!retrain') {
+    else if (message.content.toLowerCase() === '!retrain') {
         randomReact(message)
         logger.info(`Retrain command received in channel ${message.channel.name} from ${message.author.username}`);
-        retrainModel()
-        yay(message)
+        await retrainModel(message);
+        return;
     }
-    else if (message.content === '!generateanalytics') {
+    else if (message.content.toLowerCase() === '!generateanalytics') {
         randomReact(message)
         logger.info(`Analytics command received in channel ${message.channel.name} by ${message.author.username}`);
         const analytics = generateAnalytics(dataset);
         saveAnalytics(analytics);
-        await message.reply('Analytics generated and saved!');
+        await message.reply('Analytics generated and saved!').then( yay(message) );
+        return;
     }
-    if (message.content.startsWith('!removeuser')) {
+    else if (message.content.startsWith('!removeuser')) {
         const parts = message.content.split(' ');
         if (parts.length < 2) {
             await message.reply('Usage: `!removeuser <username>`');
@@ -224,9 +225,11 @@ client.on('messageCreate', async (message) => {
         if (removedCount > 0) {
             saveDataset(dataset);
             await message.reply(`Removed ${removedCount} entries for user "${usernameToRemove}".`);
+            yay(message)
         } else {
             await message.reply(`No entries found for user "${usernameToRemove}".`);
         }
+        return;
     }
     else {
         // AI guessing for each message
