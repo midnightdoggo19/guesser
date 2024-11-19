@@ -5,6 +5,7 @@ const fs = require('fs');
 const path = require('path');
 const createCsvWriter = require('csv-writer').createObjectCsvWriter;
 const winston = require('winston');
+const csv = require('csv-parser');
 
 // Setup Logger
 const logger = winston.createLogger({
@@ -111,23 +112,17 @@ function saveAnalytics(analytics) {
 function loadDataset() {
     const dataset = [];
     if (fs.existsSync(DATASET_FILE)) {
-        if (!Array.isArray(dataset)) { throw new logger.error('Dataset is not an array.'); }
-        const content = fs.readFileSync(DATASET_FILE, 'utf8');
-        const lines = content.split('\n').filter(line => line.trim() !== '');
-        if (lines.length > 1) {
-            const headers = lines[0].split(','); // Ensure valid headers
-            const rows = lines.slice(1);
-            rows.forEach(line => {
-                const values = line.split(',');
-                dataset.push({
-                    [headers[0]]: values[0],
-                    [headers[1]]: values[1],
-                });
-            });
-        }
-        logger.info(`Loaded dataset with ${dataset.length} entries.`);
-    }
-    else {
+        fs.createReadStream(DATASET_FILE)
+            .pipe(csv())
+            .on('data', (row) => {
+                if (row.text && row.username) {
+                    dataset.push({ text: row.text, username: row.username });
+                } else {
+                    console.warn('Malformed row:', row);
+                }
+            })
+            .on('end', () => logger.info(`Dataset loaded with ${dataset.length} entries.`));
+    } else {
         logger.warn('Dataset file not found. Starting with an empty dataset.');
     }
     return dataset;
@@ -135,12 +130,11 @@ function loadDataset() {
 
 let dataset = loadDataset();
 
-// Save Dataset
 function saveDataset(dataset) {
     const csvWriter = createCsvWriter({
         path: DATASET_FILE,
         header: [
-            { id: 'message', title: 'text' },
+            { id: 'text', title: 'text' },
             { id: 'username', title: 'username' },
         ],
     });
@@ -217,23 +211,20 @@ client.on('messageCreate', async (message) => {
 
         const initialCount = dataset.length;
 
-        // Filter dataset by the "username" column
         dataset = dataset.filter(row => {
-            if (!row || typeof row.username !== 'string' || typeof row.text !== 'string') {
+            if (!row || !row.username || !row.text) {
                 console.warn('Skipping malformed row:', row);
-                return true; // Keep malformed rows
+                return true;
             }
             return row.username.trim() !== usernameToRemove;
         });
 
         const removedCount = initialCount - dataset.length;
 
-        // Save the updated dataset and provide feedback
         if (removedCount > 0) {
             saveDataset(dataset);
             await message.reply(`Removed ${removedCount} entries for user "${usernameToRemove}".`);
-        }
-        else {
+        } else {
             await message.reply(`No entries found for user "${usernameToRemove}".`);
         }
     }
