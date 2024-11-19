@@ -25,7 +25,7 @@ const WORKING_CHANNEL = process.env.WORKINGCHANNEL;
 const ANALYTICS_FILE = path.resolve(__dirname, './data/analytics.json');
 
 let processedMessages = 0; // Tracks processed messages
-const AI_PROCESS_LIMIT = process.env('MAXPROCESS'); // Maximum messages to process
+const AI_PROCESS_LIMIT = process.env.MAXPROCESS; // Maximum messages to process
 
 // Initialize Discord Client
 const client = new Client({
@@ -42,6 +42,10 @@ const loadingEmojis = ['<a:loading2:1307386878609064030>', '<a:loading1:13073868
 function randomReact (message) {
     let loadingReaction = loadingEmojis[(Math.random() * loadingEmojis.length) | 0] // Pick a random emoji from the above array
     message.react(loadingReaction)
+}
+
+function yay (yaymessage) {
+    yaymessage.react('<:check:1307855194930942033>')
 }
 
 // Remove entries for a specific user
@@ -167,102 +171,22 @@ function retrainModel() {
     });
 }
 
-// Listen to all messages
 client.on('messageCreate', async (message) => {
-    // Ignore messages not in valid channel or from bot itself
-    if (message.author.bot) return;
-    if (message.channel.id != process.env.WORKINGCHANNEL) return;
+    if (message.author.bot || message.channel.id != process.env.WORKINGCHANNEL) return;
 
-    // Log each received message
-    logger.info(`Received message from ${message.author.username}: ${message.content}`);
-
-    // Save to dataset file
-    if (message.content.toLowerCase() === '!savechannel') {
-        logger.info(`Archive command received in channel ${message.channel.name} by ${message.author.username}`);
-
-        if (!message.channel.isTextBased()) {
-            await message.reply('Please use this command in a text-based channel.');
-            return;
-        }
-
-        randomReact(message);
-
-        try {
-            let messages = [];
-            let lastMessageId;
-
-            // Fetch messages in chunks of 100 (can take some time for large channels)
-            while (true) {
-                const fetchedMessages = await message.channel.messages.fetch({ limit: 100, before: lastMessageId });
-                if (fetchedMessages.size === 0) break;
-
-                fetchedMessages.forEach(msg => {
-                    if (!msg.author.bot) {
-                        messages.push({
-                            message: msg.content,
-                            username: msg.author.username,
-                        });
-                    }
-                });
-
-                lastMessageId = fetchedMessages.last().id;
-            }
-
-            let writtenFile = './dataset.csv'
-
-            // Create CSV Writer
-            const csvWriter = createCsvWriter({
-                path: writtenFile,
-                header: [
-                    { id: 'message', title: 'text' },
-                    { id: 'username', title: 'username' },
-                ]
-            });
-
-            // Write to CSV
-            await csvWriter.writeRecords(messages);
-            logger.info(`Archived ${messages.length} messages from channel ${message.channel.name}`);
-
-            // Notify user
-            message.react('<:check:1307855194930942033>')
-            await message.reply({
-                content: 'Messages archived successfully!',
-                files: [{ attachment: writtenFile }]
-            });
-        } catch (error) {
-            logger.error(`Error archiving messages: ${error.message}`);
-            await message.reply('There was an error archiving messages.');
-        }
-        return;
+    if (message.content === '!savechannel') {
+        randomReact(message)
+        logger.info(`Archive command received in ${message.channel.name} from ${message.author.username}`);
+        const count = await archiveMessages(message.channel);
+        await message.reply(`Archived ${count} messages.`)
+        yay(message)
     }
-
-    else if (message.content.toLowerCase() === '!retrain') {
-        logger.info(`Retrain command received in channel ${message.channel.name} by ${message.author.username}`);
-        try {
-            randomReact(message);
-            const retrain = spawn('python3', ['./train.py']); // Run a python script to retrain the model
-            retrain.stdout.on('data', data => {
-                console.log(data.toString()); // Log output from python
-            });
-            retrain.on('close', async code => { // When python finishes
-                message.react('<:check:1307855194930942033>')
-                logger.info('Model training finished!')
-            });
-        }
-        catch (error) {
-            await message.reply('There was an error retraining the model.');
-            await logger.error(`Error retraining model: ${error.message}`);
-        }
+    else if (message.content === '!retrain') {
+        randomReact(message)
+        logger.info(`Retrain command received in channel ${message.channel.name} from ${message.author.username}`);
+        retrainModel()
+        yay(message)
     }
-
-    else if (message.content.toLowerCase() === '!generateanalytics') {
-        randomReact(message);
-        const analytics = generateAnalytics(DATASET_FILE);
-        saveAnalytics(ANALYTICS_FILE);
-        await message.reply('Analytics generated and saved!');
-    }
-
-    // Remove User Command
     else if (message.content.startsWith('!removeuser')) {
         const parts = message.content.split(' ');
         if (parts.length < 2) {
@@ -273,8 +197,9 @@ client.on('messageCreate', async (message) => {
         const usernameToRemove = parts[1];
         const initialCount = dataset.length;
 
-        // Remove entries for the specified user
-        dataset = dataset.filter(row => row.username !== usernameToRemove);
+        logger.info(`Removeuser command received in channel ${message.channel.name} from ${message.author.username} (Removing ${usernameToRemove})`);
+
+        dataset = dataset.filter(row => row.Username !== usernameToRemove);
 
         if (dataset.length < initialCount) {
             saveDataset(dataset);
@@ -283,9 +208,15 @@ client.on('messageCreate', async (message) => {
             await message.reply(`No entries found for user "${usernameToRemove}".`);
         }
     }
-
     else {
         // AI guessing for each message
+        if (processedMessages >= AI_PROCESS_LIMIT) {
+            logger.info('AI process limit reached, ignoring further messages.');
+            return;
+        }
+
+        logger.info(`Received message from ${message.author.username}: ${message.content}`);
+
         const predictor = spawn('python3', ['./predictor.py', message.content]);
 
         let prediction = '';
