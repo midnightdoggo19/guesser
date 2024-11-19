@@ -1,5 +1,6 @@
 # Dataset
 *.csv
+*.joblib
 
 # Logs
 logs
