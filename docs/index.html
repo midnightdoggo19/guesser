@@ -19,7 +19,7 @@
 
     <script>
         // Load analytics JSON
-        fetch('../data/analytics.json')
+        fetch('./../data/analytics.json')
             .then(response => response.json())
             .then(data => {
                 const usernames = Object.keys(data.messagesPerUser);
