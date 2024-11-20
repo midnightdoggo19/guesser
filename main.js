@@ -23,7 +23,6 @@ const logger = winston.createLogger({
 // Files
 const DATASET_FILE = process.env.DATASET || 'dataset.csv';
 const WORKING_CHANNEL = process.env.WORKINGCHANNEL;
-const ANALYTICS_FILE = path.resolve(__dirname, './data/analytics.json');
 
 let processedMessages = 0; // Tracks processed messages
 const AI_PROCESS_LIMIT = process.env.MAXPROCESS; // Maximum messages to process
@@ -64,47 +63,6 @@ function removeUserFromDataset(dataset, username) {
 
     logger.info(`Removed entries for user: ${username}. Remaining entries: ${filteredDataset.length}`);
     return filteredDataset;
-}
-
-// Generate analytics
-function generateAnalytics(dataset) {
-    if (!Array.isArray(dataset) || dataset.length === 0) {
-        logger.error('Dataset is empty or invalid. Cannot generate analytics.');
-        return {};
-    }
-
-    const totalMessages = dataset.length;
-
-    const messagesPerUser = dataset.reduce((acc, row) => {
-        if (row.username && row.text) {
-            acc[row.username] = (acc[row.username] || 0) + 1;
-        } else {
-            console.warn('Skipping malformed row:', row);
-        }
-        return acc;
-    }, {});
-
-    const wordCountPerUser = dataset.reduce((acc, row) => {
-        if (row.username && row.text) {
-            const wordCount = row.text.split(/\s+/).length;
-            acc[row.username] = (acc[row.username] || 0) + wordCount;
-        } else {
-            console.warn('Skipping malformed row:', row);
-        }
-        return acc;
-    }, {});
-
-    return {
-        totalMessages,
-        messagesPerUser,
-        wordCountPerUser,
-    };
-}
-
-// Save analytics to a file
-function saveAnalytics(analytics) {
-    fs.writeFileSync(ANALYTICS_FILE, JSON.stringify(analytics, null, 2));
-    logger.info('Analytics generated and saved.');
 }
 
 function loadDataset() {
@@ -150,7 +108,7 @@ async function archiveMessages(channel) {
 
         fetched.forEach(msg => {
             if (!msg.author.bot) {
-                messages.push({ Message: msg.content, username: msg.author.username });
+                messages.push({ text: msg.content, username: msg.author.username });
             }
         });
         lastMessageId = fetched.last().id;
@@ -188,14 +146,6 @@ client.on('messageCreate', async (message) => {
         randomReact(message)
         logger.info(`Retrain command received in channel ${message.channel.name} from ${message.author.username}`);
         await retrainModel(message);
-        return;
-    }
-    else if (message.content.toLowerCase() === '!generateanalytics') {
-        randomReact(message)
-        logger.info(`Analytics command received in channel ${message.channel.name} by ${message.author.username}`);
-        const analytics = generateAnalytics(dataset);
-        saveAnalytics(analytics);
-        await message.reply('Analytics generated and saved!').then( yay(message) );
         return;
     }
     else if (message.content.startsWith('!removeuser')) {
