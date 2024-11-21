@@ -1,4 +1,6 @@
 # Guesser
+Guesser is a Discord bot that can download a channel and train an AI model on it in order to guess which user sent a message. It's written in JavaScript, though it passes the AI-related takes off to Python.
+
 ## Installation
 
 ### Clone the repository:
