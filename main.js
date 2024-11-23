@@ -48,6 +48,21 @@ function yay (yaymessage) {
     yaymessage.react('<:check:1307855194930942033>')
 }
 
+async function workingChannelName() {
+    let channel = client.channels.cache.get(process.env.WORKINGCHANNEL);
+
+    if (!channel) {
+        try {
+            channel = await client.channels.fetch(process.env.WORKINGCHANNEL);
+        } catch (error) {
+            console.error('Error fetching the channel:', error);
+            return null;
+        }
+    }
+
+    return channel ? channel.name : null;
+}
+
 // Remove entries for a specific user
 function removeUserFromDataset(dataset, username) {
     const filteredDataset = dataset.filter(row => row.username !== username);
@@ -213,9 +228,14 @@ client.on('messageCreate', async (message) => {
     }
 });
 
+client.on('error', (error) => {
+    console.log(`error: ${error}`);
+});
+
 // Bot Ready Event
 client.once('ready', () => {
-    logger.info('Bot is online and ready.');
+   logger.info('Ready!');
+   workingChannelName().then(name => { logger.info(`Running in channel: ${name}`) });
 });
 
 client.login(process.env.TOKEN);
