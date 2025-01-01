@@ -2,4 +2,3 @@ joblib
 pandas
 scikit-learn
 nltk
-os
