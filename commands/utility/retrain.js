@@ -10,6 +10,6 @@ module.exports = {
         await interaction.deferReply()
         logger.info(`Retrain command received in channel ${interaction.channel.name} from ${interaction.user.username}`);
         await retrainModel();
-        interaction.editReply('Done!')
+        await interaction.editReply('Done!')
     },
 }

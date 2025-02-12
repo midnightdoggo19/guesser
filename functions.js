@@ -84,7 +84,7 @@ async function archiveMessages(channel) {
 
         fetched.forEach(msg => {
             if (!msg.author.bot) {
-                logger.debug(`Pushing ${msg.content} by ${msg.author.username} to dataset.`)
+                logger.debug(`Saving: ${msg.author.username}: ${msg.content}`)
                 messages.push({ text: msg.content, username: msg.author.username });
             }
         });

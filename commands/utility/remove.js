@@ -36,7 +36,7 @@ module.exports = {
             await interaction.editReply(`Removed ${removedCount} entries for user "${usernameToRemove}".
 -# You'll need to retrain the model if you want them to stop being guessed!`);
         } else {
-            await interaction.editReply(`No entries found for user "${usernameToRemove}".`);
+            await interaction.editReply(`No entries found for "${usernameToRemove}".`);
         }
     },
 }

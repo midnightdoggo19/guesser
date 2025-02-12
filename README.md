@@ -14,11 +14,11 @@ Guesser is a Discord bot that can download a channel and train an AI model on it
     npm install
 
 #### Copy example.env and add your bot's information, and rename it to ".env". This includes:
-<li>TOKEN- Your bot token</li>
-<li>ID- Your bot ID</li>
-<li>LOG- The file to log to (default: guess.log)</li>
-<li>DATASET- Used by main.js and train.py as the csv to save the channel text & usernames too</li>
-<li>WORKINGCHANNEL- The channel the bot should respond in</li>
+<li>TOKEN - Your bot token</li>
+<li>ID - Your bot ID</li>
+<li>LOG - The file to log to (default: guess.log)</li>
+<li>DATASET - Used by main.js and train.py as the csv to save the channel text & usernames too</li>
+<li>WORKINGCHANNEL - The channel the bot should respond in</li>
 <li>EMOJIS - emojis to be used as "thinking" reactions</li>
 <li>LOGLEVEL - how much the logs should say</li>
 
