@@ -24,6 +24,7 @@ Guesser is a Discord bot that can download a channel and train an AI model on it
 
 ##### Run the bot:
 
+    npm run register
     npm start
 
 ## Usage

@@ -2,7 +2,8 @@
   "main": "index.js",
   "scripts": {
     "test": "jest",
-    "start": "node index.js"
+    "start": "node .",
+    "register": "node deploy-commands.js"
   },
   "keywords": [
     "ai",
