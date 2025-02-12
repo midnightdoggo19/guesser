@@ -1,7 +1,5 @@
-# Python venv
+# Project-specific
 .venv
-
-# Dataset
 *.csv
 *.joblib
 
