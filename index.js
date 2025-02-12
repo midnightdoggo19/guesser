@@ -9,7 +9,7 @@ require('dotenv').config()
 const { logger } = require('./functions.js')
 const { spawn } = require('child_process');
 
-const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers, GatewayIntentBits.GuildMessages] });
+const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent] });
 client.commands = new Collection();
 
 const foldersPath = path.join(__dirname, 'commands');
@@ -63,7 +63,7 @@ client.on('messageCreate', async (message) => {
     //     return;
     // }
 
-    if (message.author.bot || message.channel.id != process.env.WORKINGCHANNEL) return;
+    if (message.author.bot || message.channel.id != process.env.WORKINGCHANNEL ||message.content.length < 1) return;
 
     logger.info(`Received message from ${message.author.username}: ${message.content}`);
 
@@ -81,7 +81,7 @@ client.on('messageCreate', async (message) => {
     predictor.on('close', async code => {
         if (code !== 0) {
                 logger.error(`Python script exited with code ${code}`);
-                await message.reply('**Sorry, there was an error making the prediction.**\nPlease try running \`!retrain\`. If that fails, please try \`!savechannel\`. If that fails, please [open a GitHub issue](<https://github.com/midnightdoggo19/guesser/issues/new>).');
+                await message.reply('**Sorry, there was an error making the prediction.**\nPlease try running \`/retrain\`. If that fails, please try \`/archive\`. If that still fails, please [open a GitHub issue](<https://github.com/midnightdoggo19/guesser/issues/new>).');
         }
         else {
                 const predictedUser = prediction.trim();

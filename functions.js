@@ -103,6 +103,7 @@ async function retrainModel () {
         if (code === 0) { logger.info('Model retrained successfully.'); }
         else { logger.error(`Model retrain process exited with code ${code}.`); }
     });
+    return;
 }
 
 module.exports = { randomReact, retrainModel, archiveMessages, saveDataset, logger, removeUserFromDataset, dataset }
