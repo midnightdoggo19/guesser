@@ -21,7 +21,7 @@ const logger = winston.createLogger({
 const DATASET_FILE = process.env.DATASET || 'dataset.csv';
 let processedMessages = 0; // Tracks processed messages
 const AI_PROCESS_LIMIT = process.env.MAXPROCESS; // Maximum messages to process
-const dataset = [];
+let dataset = [];
 
 if (fs.existsSync(DATASET_FILE)) {
     fs.createReadStream(DATASET_FILE)

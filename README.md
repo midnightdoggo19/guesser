@@ -28,7 +28,7 @@ Guesser is a Discord bot that can download a channel and train an AI model on it
 ### Commands
     /archive - Exports the current channel as a .csv file for use in training the model.
     /retrain - Makes use of the exported .csv file to train the model.
-    /removeuser - Removes a user from the dataset.
+    /remove - Removes a user from the dataset.
 
 ### Guessing
 In order to have the bot start guessing, just send a channel in a server the bot has access to! It'll process the message and try and guess who sent it.

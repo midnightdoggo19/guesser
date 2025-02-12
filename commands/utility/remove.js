@@ -1,5 +1,7 @@
 const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
-const { saveDataset, logger, dataset } = require('../../functions.js')
+const { saveDataset, logger } = require('../../functions.js')
+let { dataset } = require('../../functions.js')
+
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -13,7 +15,7 @@ module.exports = {
     
     async execute(interaction) {
         await interaction.deferReply()
-        const usernameToRemove = interaction.options.getString('user')
+        const usernameToRemove = interaction.options.getUser('user').username
         logger.info(`Attempting to remove user: "${usernameToRemove}"`);
 
         const initialCount = dataset.length;
@@ -30,7 +32,9 @@ module.exports = {
 
         if (removedCount > 0) {
             saveDataset(dataset);
-            await interaction.editReply(`Removed ${removedCount} entries for user "${usernameToRemove}".`);
+            logger.info(`Removed ${removedCount} entries for user "${usernameToRemove}".`)
+            await interaction.editReply(`Removed ${removedCount} entries for user "${usernameToRemove}".
+-# You'll need to retrain the model if you want them to stop being guessed!`);
         } else {
             await interaction.editReply(`No entries found for user "${usernameToRemove}".`);
         }

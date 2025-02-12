@@ -8,7 +8,7 @@ module.exports = {
 
     async execute(interaction) {
         await interaction.deferReply()
-        logger.info(`Retrain command received in channel ${interaction.channel.name} from ${interaction.username}`);
+        logger.info(`Retrain command received in channel ${interaction.channel.name} from ${interaction.user.username}`);
         await retrainModel();
         interaction.editReply('Done!')
     },

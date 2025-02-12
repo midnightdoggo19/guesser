@@ -8,7 +8,7 @@ module.exports = {
 
     async execute(interaction) {
         await interaction.deferReply()
-        logger.info(`Archive command received in ${interaction.channel} from ${interaction.user}`);
+        logger.info(`Archive command received in ${interaction.channel} from ${interaction.user.username}`);
         const count = await archiveMessages(interaction.channel);
         await interaction.editReply(`Archived ${count} messages.`);
     },
