@@ -2,7 +2,9 @@ const {
     Client,
     Collection,
     Events,
-    GatewayIntentBits } = require('discord.js');
+    GatewayIntentBits,
+    PresenceUpdateStatus } = require('discord.js');
+
 const fs = require('node:fs');
 const path = require('node:path');
 require('dotenv').config()
@@ -89,6 +91,11 @@ client.on('messageCreate', async (message) => {
                 await message.reply(`The user most likely to have sent this message is: ${predictedUser}`);
         }
     });
+});
+
+process.on('SIGINT', function() {
+    logger.info("Caught interrupt signal, shutting down!");
+    process.exit();
 });
 
 client.login(process.env.TOKEN);

@@ -34,7 +34,11 @@ if (fs.existsSync(DATASET_FILE)) {
             // }
         })
         .on('end', () => logger.info(`Dataset loaded with ${dataset.length} entries.`));
-} else {
+}
+else if (dataset.length <= 0) {
+    logger.warn('Dataset file is empty!')
+}
+else {
     logger.warn('Dataset file not found. Starting with an empty dataset.');
 }
 
