@@ -10,7 +10,7 @@ Guesser is a Discord bot that can download a channel and train an AI model on it
 
 ### Install dependencies:
 
-    pip install -r ./python/requirements.txt
+    pip install -r requirements.txt
     npm install
 
 #### Copy example.env and add your bot's information, and rename it to ".env". This includes:

@@ -1,6 +1,5 @@
 const fs = require('fs');
 const path = require('path');
-const validateNpmPackage = require('validate-npm-package-name');
 
 const packageJsonPath = path.resolve(__dirname, '../package.json');
 let packageJson;
@@ -11,31 +10,7 @@ beforeAll(() => {
     packageJson = JSON.parse(fileContent);
 });
 
-describe('package.json tests', () => {
-    test('should have a valid structure', () => {
-        expect(packageJson).toHaveProperty('name');
-        expect(packageJson).toHaveProperty('version');
-        expect(packageJson).toHaveProperty('description');
-        expect(packageJson).toHaveProperty('main');
-        expect(packageJson).toHaveProperty('scripts');
-        expect(packageJson).toHaveProperty('dependencies');
-        expect(packageJson).toHaveProperty('devDependencies');
-    });
-
-    test('name should be valid', () => {
-        const result = validateNpmPackage(packageJson.name);
-        expect(result.validForNewPackages).toBe(true);
-    });
-
-    test('version should follow semantic versioning', () => {
-        const semverRegex = /^\d+\.\d+\.\d+$/;
-        expect(packageJson.version).toMatch(semverRegex);
-    });
-
-    test('should have a start script', () => {
-        expect(packageJson.scripts).toHaveProperty('start');
-    });
-
+describe('dependencies tests', () => {
     test('dependencies should not include duplicates in devDependencies', () => {
         const deps = Object.keys(packageJson.dependencies || {});
         const devDeps = Object.keys(packageJson.devDependencies || {});

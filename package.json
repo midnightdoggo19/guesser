@@ -1,11 +1,8 @@
 {
-  "name": "guesser",
-  "version": "1.0.0",
-  "description": "Discord bot for archiving channels for use in AI model training",
-  "main": "main.js",
+  "main": "index.js",
   "scripts": {
     "test": "jest",
-    "start": "node main.js"
+    "start": "node index.js"
   },
   "keywords": [
     "ai",
@@ -18,7 +15,7 @@
     "csv-parser": "^3.0.0",
     "csv-writer": "^1.6.0",
     "discord.js": "^14.16.3",
-    "dotenv": "^16.4.5",
+    "dotenv": "^16.4.7",
     "fs": "^0.0.1-security",
     "winston": "^3.17.0"
   },
