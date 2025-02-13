@@ -11,7 +11,7 @@ require('dotenv').config()
 const { logger } = require('./functions.js')
 const { spawn } = require('child_process');
 
-const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent] });
+const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent, GatewayIntentBits.DirectMessages] });
 client.commands = new Collection();
 
 const foldersPath = path.join(__dirname, 'commands');
@@ -50,9 +50,9 @@ client.on(Events.InteractionCreate, async interaction => {
 	} catch (error) {
 		console.error(error);
 		if (interaction.replied || interaction.deferred) {
-			await interaction.followUp({ content: 'There was an error while executing this command!', flags: MessageFlags.Ephemeral });
+			await interaction.followUp({ content: 'There was an error while executing this command!', flags: 64 });
 		} else {
-			await interaction.reply({ content: 'There was an error while executing this command!', flags: MessageFlags.Ephemeral });
+			await interaction.reply({ content: 'There was an error while executing this command!', flags: 64 });
 		}
 	}
 });

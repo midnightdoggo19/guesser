@@ -78,9 +78,14 @@ async function archiveMessages(channel) {
     let messages = [];
     let lastMessageId;
 
+    if (!channel) {
+        logger.warn('Channel was invalid!')
+        return 0;
+    };
+
     while (true) {
         const fetched = await channel.messages.fetch({ limit: 100, before: lastMessageId });
-        if (fetched.size === 0) break;
+        if (fetched.size == 0) break;
 
         fetched.forEach(msg => {
             if (!msg.author.bot) {
