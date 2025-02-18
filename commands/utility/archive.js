@@ -4,9 +4,7 @@ const { randomReact, archiveMessages, logger } = require('../../functions.js')
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('archive')
-        .setDescription('Save the channel to train the model')
-        .setContexts(0, 1, 2)
-        .setIntegrationTypes(0, 1),
+        .setDescription('Save the channel to train the model'),
 
     async execute(interaction) {
         await interaction.deferReply()
